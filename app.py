@@ -7,6 +7,7 @@ import datetime
 import pandas as pd
 import streamlit as st
 import google.generativeai as genai
+from pymongo import MongoClient
 
 # UTF-8 encoding fix
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -22,14 +23,20 @@ api_key = st.text_input("🔑 Enter your Google API Key:", type="password")
 if api_key:
     genai.configure(api_key=api_key)
 
-# MongoDB settings (sidebar)
+# --- MongoDB Settings ---
+# Defaults from Streamlit Secrets
+mongo_uri_default = st.secrets.get("MONGO_URI", "mongodb://localhost:27017/")
+db_name_default = st.secrets.get("MONGO_DB", "mydb")
+collection_name_default = st.secrets.get("COLLECTION_NAME", "mycollection")
+
+# Sidebar inputs (optional overrides)
 st.sidebar.header("⚙️ MongoDB Settings")
-mongo_uri = st.sidebar.text_input("MongoDB URI", "mongodb://localhost:27017/")
-db_name = st.sidebar.text_input("Database Name", "mydb")
-collection_name = st.sidebar.text_input("Collection Name", "mycollection")
+mongo_uri = st.sidebar.text_input("MongoDB URI", mongo_uri_default)
+db_name = st.sidebar.text_input("Database Name", db_name_default)
+collection_name = st.sidebar.text_input("Collection Name", collection_name_default)
 exec_mode = st.sidebar.selectbox("Execution Mode (Auto recommended)", ["Auto", "Find", "Aggregate"])
 
-# Import helpers from query_utils (organized)
+# --- Import helpers from query_utils ---
 from query_utils import (
     query_cache,
     save_cache,
@@ -49,7 +56,7 @@ from query_utils import (
     get_schema_info,
 )
 
-# CSV Upload & Import
+# --- CSV Upload & Import ---
 st.subheader("📂 Upload CSV to MongoDB")
 uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 
@@ -95,7 +102,7 @@ if uploaded_file is not None and st.button("Import CSV to MongoDB"):
     except Exception as e:
         st.error(f"❌ Error importing CSV: {e}")
 
-# Query section
+# --- Query section ---
 st.subheader("💬 Ask in Natural Language")
 user_input = st.text_area("Enter your question:", placeholder="e.g. Which products have a rating above 4.5 and more than 100 reviews?")
 show_query = st.checkbox("Show Generated Query")

@@ -51,7 +51,7 @@ def get_mongo_client(uri: str) -> Optional[MongoClient]:
 @st.cache_resource
 def load_model():
     # Keep the same model string you used in the app
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-2.5-flash")
 
 # ------------------ Query Complexity ------------------
 def is_complex_query(user_input: str) -> bool:
